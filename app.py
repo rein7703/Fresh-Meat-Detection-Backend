@@ -5,6 +5,7 @@ import os
 import glob
 import re
 import numpy as np
+import json
 
 # Keras
 # from keras.applications.imagenet_utils import preprocess_input, decode_predictions
@@ -77,7 +78,7 @@ def model_predict(img_path, model):
     img = img/255.0
     prediction_image = np.array(img)
     prediction_image = np.expand_dims(prediction_image, axis=0)
-    prediction_image = preprocess_input(prediction_image)
+    # prediction_image = preprocess_input(prediction_image)
 
 
     preds = model.predict(prediction_image)
@@ -151,6 +152,7 @@ def upload():
         value = np.argmax(preds)
         move_name = mapper(value)
         result = "predictions is {}.".format(move_name)
+        result = json.dumps(result)
         print(value)
         print("last steppppp")
         return result
