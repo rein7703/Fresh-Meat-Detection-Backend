@@ -7,7 +7,7 @@ import re
 import numpy as np
 import json
 
-import pymongo
+from pymongo import MongoClient
 
 # Keras
 # from keras.applications.imagenet_utils import preprocess_input, decode_predictions
@@ -25,6 +25,10 @@ print("successfully running")
 
 from dotenv import load_dotenv
 load_dotenv()
+MONGO_URI = os.environ.get('MONGO_URI')
+cluster = MongoClient(MONGO_URI)
+db      = cluster['smart-beef']
+col     = db['histories']
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -48,24 +52,6 @@ model = load_model(MODEL_PATH)
 
 print('Model loaded. Check http://127.0.0.1:5000/')
 
-def uploadImage(img):
-#   image = Image.open(img.stream)
-  # Upload the image and get its URL
-  # ==============================
-#   image_bytes = BytesIO()
-#   image.save(image_bytes, format='JPEG')
-#   image_bytes.seek(0)
-
-  # Upload the image.
-  # Set the asset's public ID and allow overwriting the asset with new versions
-  cloudinary.uploader.upload(img)
-
-  # Build the URL for the image and save it in the variable 'srcURL'
-  srcURL = cloudinary.CloudinaryImage("quickstart_butterfly").build_url()
-
-  # Log the image URL to the console. 
-  # Copy this URL in a browser tab to generate the image on the fly.
-  print("****2. Upload an image****\nDelivery URL: ", srcURL, "\n")
   
 def model_predict(img_path, model):
     # img = image.load_img(img_path, target_size=(224, 224))
@@ -100,7 +86,7 @@ def upload():
     if request.method == 'POST':
         # Get the file from post request
         f = request.files['file']
-        # uploadImage(f)
+        
         # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(
@@ -118,10 +104,33 @@ def upload():
         result = {"prediction": move_name}
         result["image_url"] = str(response["secure_url"])
         result["email"] = request.form.get("email")
-        result = json.dumps(result)
+        result_json = json.dumps(result)
         print(value)
         print("last steppppp")
-        return result
+        
+         # Save to histories
+        client = MongoClient(MONGO_URI)
+
+        db = client["smart-beef"]
+        collection = db["histories"]
+        
+        data = {
+         "url"          : result["image_url"],
+         "email"        : result["email"],
+         "prediction"   : move_name
+     }
+        print(data)
+        # result['uid'] = req.form.get('uid')
+        collection.insert_one(data)
+
+        client.close()
+
+        # headers = {
+        #     'Access-Control-Allow-Origin': '*',
+        #     'Access-Control-Allow-Methods': 'POST',
+        #     "Content-Type": "application/json"
+        # }
+        return result_json
     return None
 
 
