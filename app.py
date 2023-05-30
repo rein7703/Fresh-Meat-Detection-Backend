@@ -38,10 +38,19 @@ print("****1. Set up and configure the SDK:****\nCredentials: ", config.cloud_na
 # from PIL import Image
 # from io import BytesIO
 import logging
-# kode github
- 
+
+# cors library
+from flask_cors import CORS
  # Define a flask app
 app = Flask(__name__)
+CORS(app, resources={
+    r"/*": {
+        "origins": "http://localhost:3000",
+        "methods": ["GET", "POST"]
+    }
+})
+# CORS(app)
+# CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Model saved with Keras model.save()
 MODEL_PATH = 'models/test-model.h5'
