@@ -6,6 +6,7 @@ import glob
 import re
 import numpy as np
 import json
+from bson import json_util
 
 from pymongo import MongoClient
 
@@ -118,7 +119,7 @@ def upload():
          "url"          : result["image_url"],
          "email"        : result["email"],
          "prediction"   : move_name
-     }
+        }
         print(data)
         # result['uid'] = req.form.get('uid')
         collection.insert_one(data)
@@ -131,7 +132,91 @@ def upload():
         #     "Content-Type": "application/json"
         # }
         return result_json
+    elif request.method == 'GET':
+        # Get the file from post request
+        email = request.form.get('email')
+        # cosmos_uri = "mongodb://frescis-mongo:w6zrCWZbMjBWkPOLTD7BarZHD91ZRgJFh2j7KupPwIp2ciSlvSnNC2oUBjhk1Ju4jcFssNyCWJO2ACDbCB9q7w==@frescis-mongo.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@frescis-mongo@"
+        client = MongoClient(MONGO_URI)
+
+        db = client["smart-beef"]
+        collection = db["histories"]
+
+        # Create a query object to match the UID
+        query = {'email': email}
+        print(email)
+        # Use the find method to retrieve all matching documents
+        cursor = collection.find(query)
+
+        # Convert the documents to a list
+        histories = list(cursor)
+        new_histories = []
+
+        for history in histories:
+            # Convert the ObjectId to a string
+            history['_id'] = str(history['_id'])
+            new_histories.append(history)
+
+        # Close the MongoDB connection
+        client.close()
+
+        result = {
+            'histories': new_histories
+        }
+
+        result_json = json.dumps(result, default=json_util.default)
+
+
+        # headers = {
+        #     'Access-Control-Allow-Origin': '*',
+        #     'Access-Control-Allow-Methods': 'POST',
+        #     "Content-Type": "application/json"
+        # }
+        return result_json
     return None
+
+# @app.route('/histories', methods=['GET'])
+# def upload():
+#     if request.method == 'GET':
+#         # Get the file from post request
+#         email = request.params.get('email')
+#         # cosmos_uri = "mongodb://frescis-mongo:w6zrCWZbMjBWkPOLTD7BarZHD91ZRgJFh2j7KupPwIp2ciSlvSnNC2oUBjhk1Ju4jcFssNyCWJO2ACDbCB9q7w==@frescis-mongo.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@frescis-mongo@"
+#         client = MongoClient(MONGO_URI)
+
+#         db = client["smart-beef"]
+#         collection = db["histories"]
+
+#         # Create a query object to match the UID
+#         query = {'email': email}
+
+#         # Use the find method to retrieve all matching documents
+#         cursor = collection.find(query)
+
+#         # Convert the documents to a list
+#         histories = list(cursor)
+#         new_histories = []
+
+#         for history in histories:
+#             # Convert the ObjectId to a string
+#             history['_id'] = str(history['_id'])
+#             new_histories.append(history)
+
+#         # Close the MongoDB connection
+#         client.close()
+
+#         result = {
+#             'histories': new_histories
+#         }
+
+#         result_json = json.dumps(result, default=json_util.default)
+
+
+#         # headers = {
+#         #     'Access-Control-Allow-Origin': '*',
+#         #     'Access-Control-Allow-Methods': 'POST',
+#         #     "Content-Type": "application/json"
+#         # }
+#         return result_json
+#     return None
 
 
 if __name__ == '__main__':
