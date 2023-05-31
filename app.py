@@ -143,7 +143,7 @@ def upload():
         return result_json
     elif request.method == 'GET':
         # Get the file from post request
-        email = request.form.get('email')
+        email = request.args.get('email')
         # cosmos_uri = "mongodb://frescis-mongo:w6zrCWZbMjBWkPOLTD7BarZHD91ZRgJFh2j7KupPwIp2ciSlvSnNC2oUBjhk1Ju4jcFssNyCWJO2ACDbCB9q7w==@frescis-mongo.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@frescis-mongo@"
         client = MongoClient(MONGO_URI)
 
@@ -182,6 +182,7 @@ def upload():
         # }
         return result_json
     return None
+
 
 
 if __name__ == '__main__':
