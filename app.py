@@ -114,6 +114,7 @@ def upload():
         result = {"prediction": move_name}
         result["image_url"] = str(response["secure_url"])
         result["email"] = request.form.get("email")
+        result["date"] = request.form.get("date")
         result_json = json.dumps(result)
         print(value)
         print("last steppppp")
@@ -127,6 +128,7 @@ def upload():
         data = {
          "url"          : result["image_url"],
          "email"        : result["email"],
+         "date"        : result["date"],
          "prediction"   : move_name
         }
         print(data)
