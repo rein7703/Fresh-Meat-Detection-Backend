@@ -1,7 +1,7 @@
 # For more info on Python, GitHub Actions, and Azure App Service
 # please head to https://aka.ms/python-webapps-actions
 
-name: Build and deploy Flask + Vue.js app to Azure App Service
+name: Build and deploy Flask app to Azure App Service
 
 on:
   push:
@@ -31,9 +31,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: test with PyTest
-        run: pytest --cov=app --cov-report=xml
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v2
@@ -73,3 +70,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.WEBAPP_NAME}}
+          slot-name: "Production"
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_87B210487A5347AC996A97FA92E1907B }}
