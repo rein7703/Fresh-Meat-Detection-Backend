@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+
 # coding=utf-8
 import sys
 import os
@@ -21,48 +22,55 @@ from keras.utils import load_img, img_to_array
 # Flask utils
 from flask import Flask, redirect, url_for, request, render_template
 from werkzeug.utils import secure_filename
+
 # from gevent.pywsgi import WSGIServer
 print("successfully running")
 
 from dotenv import load_dotenv
+
 load_dotenv()
-MONGO_URI = os.environ.get('MONGO_URI')
+MONGO_URI = os.environ.get("MONGO_URI")
 cluster = MongoClient(MONGO_URI)
-db      = cluster['smart-beef']
-col     = db['histories']
+db = cluster["smart-beef"]
+col = db["histories"]
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+
 config = cloudinary.config(secure=True)
-print("****1. Set up and configure the SDK:****\nCredentials: ", config.cloud_name, config.api_key, "\n")
+print(
+    "****1. Set up and configure the SDK:****\nCredentials: ",
+    config.cloud_name,
+    config.api_key,
+    "\n",
+)
 # from PIL import Image
 # from io import BytesIO
 import logging
 
 # cors library
 from flask_cors import CORS
- # Define a flask app
+
+# Define a flask app
 app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": "http://localhost:3000",
-        "methods": ["GET", "POST"]
-    }
-})
+CORS(
+    app,
+    resources={r"/*": {"origins": "http://localhost:3000", "methods": ["GET", "POST"]}},
+)
 # CORS(app)
 # CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Model saved with Keras model.save()
-MODEL_PATH = 'models/test-model.h5'
+MODEL_PATH = "models/test-model.h5"
 
 # Load your trained model
 model = load_model(MODEL_PATH)
 # model._make_predict_function()          # Necessary
 # print('Model loaded. Start serving...')
 
-print('Model loaded. Check http://127.0.0.1:5000/')
+print("Model loaded. Check http://127.0.0.1:5000/")
 
-  
+
 def model_predict(img_path, model):
     # img = image.load_img(img_path, target_size=(224, 224))
     print("pass modell_predict function")
@@ -71,44 +79,45 @@ def model_predict(img_path, model):
     # Preprocessing the image
     # x = image.img_to_array(img)
     img = img_to_array(img)
-    img = img/255.0
+    img = img / 255.0
     prediction_image = np.array(img)
     prediction_image = np.expand_dims(prediction_image, axis=0)
     # prediction_image = preprocess_input(prediction_image)
 
-    
     preds = model.predict(prediction_image)
     print(preds)
-    
+
     return preds
 
 
-Name = ['Fresh', 'Spoiled']
-N=[]
+Name = ["Fresh", "Spoiled"]
+N = []
 for i in range(len(Name)):
-    N+=[i]
-reverse_mapping=dict(zip(N,Name)) 
+    N += [i]
+reverse_mapping = dict(zip(N, Name))
+
+
 def mapper(value):
     return reverse_mapping[value]
 
-@app.route('/predict', methods=['GET', 'POST'])
+
+@app.route("/predict", methods=["GET", "POST"])
 def upload():
-    if request.method == 'POST':
+    if request.method == "POST":
         # Get the file from post request
-        f = request.files['file']
-        
+        f = request.files["file"]
+
         # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
-        file_path = os.path.join(
-            basepath, 'uploads', secure_filename(f.filename))
+        file_path = os.path.join(basepath, "uploads", secure_filename(f.filename))
         f.save(file_path)
 
         # Make prediction
         preds = model_predict(file_path, model)
-        
+
         response = cloudinary.uploader.upload(file_path)
         logging.info("response", response)
-        
+
         value = np.argmax(preds)
         move_name = mapper(value)
         result = {"prediction": move_name}
@@ -118,18 +127,18 @@ def upload():
         result_json = json.dumps(result)
         print(value)
         print("last steppppp")
-        
-         # Save to histories
+
+        # Save to histories
         client = MongoClient(MONGO_URI)
 
         db = client["smart-beef"]
         collection = db["histories"]
-        
+
         data = {
-         "url"          : result["image_url"],
-         "email"        : result["email"],
-         "date"        : result["date"],
-         "prediction"   : move_name
+            "url": result["image_url"],
+            "email": result["email"],
+            "date": result["date"],
+            "prediction": move_name,
         }
         print(data)
         # result['uid'] = req.form.get('uid')
@@ -143,9 +152,9 @@ def upload():
         #     "Content-Type": "application/json"
         # }
         return result_json
-    elif request.method == 'GET':
+    elif request.method == "GET":
         # Get the file from post request
-        email = request.args.get('email')
+        email = request.args.get("email")
         # cosmos_uri = "mongodb://frescis-mongo:w6zrCWZbMjBWkPOLTD7BarZHD91ZRgJFh2j7KupPwIp2ciSlvSnNC2oUBjhk1Ju4jcFssNyCWJO2ACDbCB9q7w==@frescis-mongo.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@frescis-mongo@"
         client = MongoClient(MONGO_URI)
 
@@ -153,7 +162,7 @@ def upload():
         collection = db["histories"]
 
         # Create a query object to match the UID
-        query = {'email': email}
+        query = {"email": email}
         print(email)
         # Use the find method to retrieve all matching documents
         cursor = collection.find(query)
@@ -164,18 +173,15 @@ def upload():
 
         for history in histories:
             # Convert the ObjectId to a string
-            history['_id'] = str(history['_id'])
+            history["_id"] = str(history["_id"])
             new_histories.append(history)
 
         # Close the MongoDB connection
         client.close()
 
-        result = {
-            'histories': new_histories
-        }
+        result = {"histories": new_histories}
 
         result_json = json.dumps(result, default=json_util.default)
-
 
         # headers = {
         #     'Access-Control-Allow-Origin': '*',
@@ -186,6 +192,5 @@ def upload():
     return None
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

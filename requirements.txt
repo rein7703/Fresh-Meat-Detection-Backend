@@ -1,0 +1,9 @@
+Flask
+gunicorn
+numpy==1.23.5
+cloudinary
+python-dotenv
+bson
+pymongo
+tensorflow
+flask_cors
