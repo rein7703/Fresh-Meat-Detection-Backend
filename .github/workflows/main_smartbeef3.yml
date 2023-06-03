@@ -65,9 +65,6 @@ jobs:
       - name: Configure deployment and runtime settings on the webapp
         run: |
           az configure --defaults group=${{ env.RESOURCE_GROUP }} web=${{ env.WEBAPP_NAME }}
-          az webapp config appsettings --settings \
-            SCM_DO_BUILD_DURING_DEPLOYMENT=true \
-            FLASK_ENV=production
 
           az webapp config set \
             --startup-file "gunicorn --bind=0.0.0.0 --timeout 600 app:app"
