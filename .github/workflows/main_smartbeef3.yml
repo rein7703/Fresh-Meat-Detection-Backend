@@ -62,7 +62,7 @@ jobs:
 
           az webapp config set \
             --startup-file "gunicorn --bind=0.0.0.0 --timeout 600 app:app"
-      #Deploy
+      #Deploy Lagi
       - name: Deploy to App Service
         uses: azure/webapps-deploy@v2
         with:
