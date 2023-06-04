@@ -7,3 +7,4 @@ python-dotenv
 cloudinary
 flask-cors
 markupsafe==2.0.1
+Pillow
