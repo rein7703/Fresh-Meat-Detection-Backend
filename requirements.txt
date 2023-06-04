@@ -2,7 +2,8 @@ numpy
 pymongo
 flask
 keras
-werkzeug
+werkzeug==2.0.3
 python-dotenv
 cloudinary
 flask-cors
+markupsafe==2.0.1
