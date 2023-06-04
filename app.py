@@ -10,6 +10,7 @@ import json
 from bson import json_util
 
 from pymongo import MongoClient
+import tensorflow
 
 # Keras
 # from keras.applications.imagenet_utils import preprocess_input, decode_predictions
